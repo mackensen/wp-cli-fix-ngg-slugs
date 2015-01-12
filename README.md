@@ -10,4 +10,4 @@ This package is **not** available via Composer. To install, follow the steps for
 Currently two options are supported, `--dry-run` and `--network`.
 
 ### About
-This project is independent of **NextGEN Gallery** and not supported nor approved by them in any way. I created it to solve a specific problem.
+This project is independent of **NextGEN Gallery** and not supported nor approved by them in any way. I created it to solve a specific problem. Its structure borrows from WP-CLI's `search-replace` command.
