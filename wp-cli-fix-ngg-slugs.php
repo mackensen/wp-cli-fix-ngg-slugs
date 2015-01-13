@@ -41,7 +41,7 @@ class FixSlugs_Command extends WP_CLI_Command {
 			foreach ( $to_be_fixed as $picture ) {
 				// Try to use the base filename as the slug.
 				$fileparts = pathinfo( $picture->filename );
-				$base      = $fileparts['filename'];
+				$base      = sanitize_file_name( $fileparts['filename'] );
 				$slug      = $base;
 				$counter   = 2;
 
