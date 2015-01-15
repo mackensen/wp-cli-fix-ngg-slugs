@@ -14,10 +14,17 @@ class FixSlugs_Command extends WP_CLI_Command {
 		$network = isset( $assoc_args['network'] );
 		$prefix  = $network ? $wpdb->base_prefix : $wpdb->prefix;
 
-		// Get table list.
-		$tables = self::get_table_list( $args, $prefix, $network );
+		// Get site list.
+		$sites = wp_get_sites();
+		foreach ( $sites as $site ) {
+			$siteid = $site['blog_id'];
+			$table  = $prefix . $siteid . "_ngg_pictures";
 
-		foreach ( $tables as $table ) {
+			// Check that table exists.
+			if ( $wpdb->get_var( "SHOW TABLES LIKE '$table'" ) != $table ) {
+				continue;
+			}
+
 			// See if there's anything to do here.
 			$count_missing_slugs = $wpdb->get_var(
 				"SELECT COUNT(*) FROM $table WHERE LENGTH(image_slug) = 0 OR image_slug IS NULL"
@@ -31,7 +38,6 @@ class FixSlugs_Command extends WP_CLI_Command {
 			}
 
 			// Set the current site.
-			list( $siteid ) = sscanf( $table, $prefix."%d_ngg_pictures" );
 			switch_to_blog( $siteid );
 
 			// Get the pictures with missing slugs.
@@ -74,15 +80,6 @@ class FixSlugs_Command extends WP_CLI_Command {
 				WP_CLI::success( "Fixed $total slugs." );
 			}
 		}
-	}
-
-	// Adapted from wp-cli search-replace.
-	private static function get_table_list( $args, $prefix, $network ) {
-		global $wpdb;
-
-		$matching_tables = $wpdb->get_col( $wpdb->prepare( 'SHOW TABLES LIKE %s', $prefix . '%ngg_pictures' ) );
-
-		return array_values( $matching_tables );
 	}
 }
 
