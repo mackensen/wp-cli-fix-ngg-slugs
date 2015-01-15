@@ -15,7 +15,11 @@ class FixSlugs_Command extends WP_CLI_Command {
 		$prefix  = $network ? $wpdb->base_prefix : $wpdb->prefix;
 
 		// Get site list.
-		$sites = wp_get_sites();
+		$sites = wp_get_sites( array(
+			'network_id' => $wpdb->siteid,
+			'limit'      => 0
+		) );
+
 		foreach ( $sites as $site ) {
 			$siteid = $site['blog_id'];
 			$table  = $prefix . $siteid . "_ngg_pictures";
