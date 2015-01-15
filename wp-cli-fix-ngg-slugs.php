@@ -22,7 +22,7 @@ class FixSlugs_Command extends WP_CLI_Command {
 			$fixed = 0;
 
 			// Skip if all slugs set.
-			if ( 0 === $count_missing_slugs ) {
+			if ( 0 == $count_missing_slugs ) {
 				$report[] = array( $table, $fixed );
 				continue;
 			}
