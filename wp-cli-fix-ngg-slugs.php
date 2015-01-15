@@ -11,8 +11,11 @@ class FixSlugs_Command extends WP_CLI_Command {
 		$total   = 0;
 		$report  = array();
 		$dry_run = isset( $assoc_args['dry-run'] );
+		$network = isset( $assoc_args['network'] );
+		$prefix  = $network ? $wpdb->base_prefix : $wpdb->prefix;
 
-		$tables = self::get_table_list( $args, isset( $assoc_args['network'] ) );
+		// Get table list.
+		$tables = self::get_table_list( $args, $prefix, $network );
 
 		foreach ( $tables as $table ) {
 			// See if there's anything to do here.
@@ -27,10 +30,9 @@ class FixSlugs_Command extends WP_CLI_Command {
 				continue;
 			}
 
-			// Get the existing slugs to avoid collisions.
-			$slugs = $wpdb->get_col(
-				"SELECT image_slug FROM $table WHERE LENGTH(image_slug) > 0 AND image_slug IS NOT NULL"
-			);
+			// Set the current site.
+			list( $siteid ) = sscanf( $table, $prefix."%d_ngg_pictures" );
+			switch_to_blog( $siteid );
 
 			// Get the pictures with missing slugs.
 			$to_be_fixed = $wpdb->get_results(
@@ -50,11 +52,16 @@ class FixSlugs_Command extends WP_CLI_Command {
 						array( 'pid' => $picture->pid )
 					);
 				}
-				$slugs[] = $slug;
 				$fixed++;
 			}
 			$report[] = array( $table, $fixed );
 			$total += $fixed;
+
+			// Clear the image cache.
+			if ( ! $dry_run ) {
+				C_Photocrati_Cache::flush( 'all' );
+			}
+			restore_current_blog();
 		}
 
 		if ( ! WP_CLI::get_config( 'quiet' ) ) {
@@ -70,10 +77,9 @@ class FixSlugs_Command extends WP_CLI_Command {
 	}
 
 	// Adapted from wp-cli search-replace.
-	private static function get_table_list( $args, $network ) {
+	private static function get_table_list( $args, $prefix, $network ) {
 		global $wpdb;
 
-		$prefix = $network ? $wpdb->base_prefix : $wpdb->prefix;
 		$matching_tables = $wpdb->get_col( $wpdb->prepare( 'SHOW TABLES LIKE %s', $prefix . '%ngg_pictures' ) );
 
 		return array_values( $matching_tables );
