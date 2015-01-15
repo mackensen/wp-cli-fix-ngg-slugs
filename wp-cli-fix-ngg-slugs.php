@@ -34,22 +34,13 @@ class FixSlugs_Command extends WP_CLI_Command {
 
 			// Get the pictures with missing slugs.
 			$to_be_fixed = $wpdb->get_results(
-				"SELECT pid,filename FROM $table WHERE LENGTH(image_slug) = 0 OR image_slug IS NULL"
+				"SELECT pid, alttext FROM $table WHERE LENGTH(image_slug) = 0 OR image_slug IS NULL"
 			);
 
 			// Fix each missing slug.
 			foreach ( $to_be_fixed as $picture ) {
-				// Try to use the base filename as the slug.
-				$fileparts = pathinfo( $picture->filename );
-				$base      = sanitize_file_name( $fileparts['filename'] );
-				$slug      = $base;
-				$counter   = 2;
-
-				// Increment if there's a collision.
-				while ( in_array( $slug, $slugs ) ) {
-					$slug = sprintf( '%s-%d', $base, $counter );
-					$counter++;
-				}
+				// Get the next unique slug.
+				$slug = nggdb::get_unique_slug( sanitize_title_with_dashes( $picture->alttext ), 'image' );
 
 				// Set the new slug.
 				if ( ! $dry_run ) {
