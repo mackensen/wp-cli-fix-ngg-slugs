@@ -7,7 +7,10 @@ This is [WP-CLI](http://wp-cli.org/) package which populates missing `image_slug
 This package is **not** available via Composer. To install, follow the steps for [installing manually](https://github.com/wp-cli/wp-cli/wiki/Community-Packages#installing-a-package-without-composer).
 
 ### Usage
-Currently two options are supported, `--dry-run` and `--network`.
+Currently two options are supported, `--dry-run` and `--network`. If new slugs are created the NextGEN Gallery cache for that site will be flushed.
+
+### Caveats
+This is untested in single-site WordPress and probably fails.
 
 ### About
 This project is independent of **NextGEN Gallery** and not supported nor approved by them in any way. I created it to solve a specific problem. Its structure borrows from WP-CLI's `search-replace` command.
