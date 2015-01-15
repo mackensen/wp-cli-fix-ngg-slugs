@@ -42,13 +42,18 @@ class FixSlugs_Command extends WP_CLI_Command {
 
 			// Get the pictures with missing slugs.
 			$to_be_fixed = $wpdb->get_results(
-				"SELECT pid, alttext FROM $table WHERE LENGTH(image_slug) = 0 OR image_slug IS NULL"
+				"SELECT pid, alttext, filename FROM $table WHERE LENGTH(image_slug) = 0 OR image_slug IS NULL"
 			);
 
 			// Fix each missing slug.
 			foreach ( $to_be_fixed as $picture ) {
 				// Get the next unique slug.
 				$slug = nggdb::get_unique_slug( sanitize_title_with_dashes( $picture->alttext ), 'image' );
+
+				// Sometimes images have no metadata; we fallback on the filename.
+				if ( empty( $slug ) ) {
+					$slug = nggdb::get_unique_slug( sanitize_title_with_dashes( $picture->filename ), 'image' );
+				}
 
 				// Set the new slug.
 				if ( ! $dry_run ) {
